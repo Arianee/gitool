@@ -39,7 +39,9 @@ jobs:
         run: 'npm version ${{ inputs.version }} -m "chore: release %s"'
       
       - name: Push changes
-        run: git push origin master --follow-tags
+        run: |
+          git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/Arianee/gitool.git
+          git push origin master --follow-tags
       
       - name: Publish to npm
         run: npm publish --access public
