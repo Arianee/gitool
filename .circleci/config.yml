@@ -1,0 +1,58 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@5.1.0
+
+executors:
+  node-executor:
+    docker:
+      - image: cimg/node:18.16.0
+
+jobs:
+  test:
+    executor: node-executor
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: Run tests
+          command: npm test
+
+  publish_on_npm:
+    executor: node-executor
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "${SSH_KEY_FINGERPRINT}"
+      - node/install-packages
+      - run:
+          name: Auth With NPM
+          command: npm set //registry.npmjs.org/:_authToken=$NPM_TOKEN
+      - run:
+          name: Configure Git
+          command: |
+            git config user.name "CircleCI Bot"
+            git config user.email "tech@arianee.org"
+      - run:
+          name: Bump version and publish
+          command: |
+            npm version patch -m "chore: bump to version %s [skip ci]"
+            git push origin main --follow-tags
+            npm publish --access public
+
+workflows:
+  test-and-publish:
+    jobs:
+      - test
+      - publish_approval:
+          type: approval
+          requires:
+            - test
+          filters:
+            branches:
+              only:
+                - main
+      - publish_on_npm:
+          requires:
+            - publish_approval
