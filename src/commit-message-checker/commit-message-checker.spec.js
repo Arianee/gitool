@@ -11,6 +11,8 @@ describe('commit message checker', () => {
             '2.0.1',
             '02.02.001',
             'release(changelog): Update changelog.md [CI SKIP]',
+            'fix(nmp-front): increase smart links batch limit from 10k to 100k (#3688)',
+            'feat(my-scope): scope with dash',
         ]
 
     acceptedCommit.forEach(commitMessage => {
